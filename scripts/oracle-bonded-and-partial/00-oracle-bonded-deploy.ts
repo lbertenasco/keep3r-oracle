@@ -2,10 +2,24 @@ import { ContractFactory } from '@ethersproject/contracts';
 import { providers } from 'ethers';
 import { run, ethers } from 'hardhat';
 import contracts from '../../utils/contracts';
-const { Confirm } = require('enquirer');
+const { Form, Confirm } = require('enquirer');
 
-const prompt = new Confirm({
-  message: 'Do you wish to deploy oracle bonded keeper ?',
+const deploymentInformationPrompt = new Form({
+  name: 'deploy',
+  message:
+    'Please provide the following information for partial keep3rv1 oracle job deployment:',
+  choices: [
+    {
+      name: 'keep3rV1',
+      message: 'Keep3r V1 address',
+      initial: contracts.mainnet.keep3r,
+    },
+    {
+      name: 'keep3rV1Oracle',
+      message: 'Keep3r V1 oracle address',
+      initial: contracts.mainnet.yfi.keeperV1Oracle,
+    },
+  ],
 });
 
 async function main() {
@@ -21,26 +35,33 @@ function promptAndSubmit(oracleBondedKeeperContract: ContractFactory) {
     const [owner] = await ethers.getSigners();
     console.log('Deployer address:', owner.address);
     try {
-      prompt.run().then(async (answer: boolean) => {
-        if (answer) {
-          console.time('OracleBondedKeeper deployed');
-          const oracleBondedKeeper = await oracleBondedKeeperContract.deploy(
-            contracts.mainnet.keep3r,
-            contracts.mainnet.yfi.oracleBondedKeeper
-          );
-          console.timeEnd('OracleBondedKeeper deployed');
-          console.log(
-            'Oracle bonded keeper deployed with address:',
-            oracleBondedKeeper.address
-          );
-          console.log(
-            'IMPORTANT: Please remember to add this address into /utils/contract.ts file under owned.oracleBondedKeeper'
-          );
-          resolve();
-        } else {
-          console.error('Aborted!');
-          resolve();
-        }
+      deploymentInformationPrompt.run().then(async (answer: any) => {
+        const prompt = new Confirm({
+          message: `Do you wish to deploy oracle bonded keeper with the following parameters:
+          Keep3rV1 address: ${answer.keep3rV1}
+          Keep3rV1 oracle address: ${answer.keep3rV1Oracle}`,
+        });
+        prompt.run().then(async (confirmAnswer: boolean) => {
+          if (confirmAnswer) {
+            console.time('OracleBondedKeeper deployed');
+            const oracleBondedKeeper = await oracleBondedKeeperContract.deploy(
+              answer.keep3rV1,
+              answer.keep3rV1Oracle
+            );
+            console.timeEnd('OracleBondedKeeper deployed');
+            console.log(
+              'Oracle bonded keeper deployed with address:',
+              oracleBondedKeeper.address
+            );
+            console.log(
+              'IMPORTANT: Please remember to add this address into /utils/contract.ts file under owned.oracleBondedKeeper'
+            );
+            resolve();
+          } else {
+            console.error('Aborted!');
+            resolve();
+          }
+        });
       });
     } catch (err) {
       reject(err);
