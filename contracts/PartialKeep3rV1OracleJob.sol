@@ -86,7 +86,7 @@ contract PartialKeep3rV1OracleJob is UtilsReady, Keep3r, IPartialKeep3rV1OracleJ
     }
 
     function _setRewardMultiplier(uint256 _rewardMultiplier) internal {
-        require(_rewardMultiplier <= MAX_REWARD_MULTIPLIER, "PartialKeep3rV1OracleJob::set-reward-multiplier:multiplier-exceeds-max");
+        require(_rewardMultiplier <= MAX_REWARD_MULTIPLIER, "Keep3rV1OracleJob::set-reward-multiplier:multiplier-exceeds-max");
         rewardMultiplier = _rewardMultiplier;
     }
 
@@ -102,13 +102,13 @@ contract PartialKeep3rV1OracleJob is UtilsReady, Keep3r, IPartialKeep3rV1OracleJ
     }
 
     function _addPair(address _pair) internal {
-        require(!_availablePairs.contains(_pair), "PartialKeep3rV1OracleJob::add-pair:pair-already-added");
+        require(!_availablePairs.contains(_pair), "Keep3rV1OracleJob::add-pair:pair-already-added");
         _availablePairs.add(_pair);
         emit PairAdded(_pair);
     }
 
     function removePair(address _pair) external override onlyGovernor {
-        require(_availablePairs.contains(_pair), "PartialKeep3rV1OracleJob::remove-pair:pair-not-found");
+        require(_availablePairs.contains(_pair), "Keep3rV1OracleJob::remove-pair:pair-not-found");
         _availablePairs.remove(_pair);
         emit PairRemoved(_pair);
     }
@@ -127,7 +127,7 @@ contract PartialKeep3rV1OracleJob is UtilsReady, Keep3r, IPartialKeep3rV1OracleJ
     }
 
     function _workable(address _pair) internal view returns (bool) {
-        require(_availablePairs.contains(_pair), "PartialKeep3rV1OracleJob::workable:pair-not-found");
+        require(_availablePairs.contains(_pair), "Keep3rV1OracleJob::workable:pair-not-found");
         return IOracleBondedKeeper(oracleBondedKeeper).workable(_pair);
     }
 
@@ -135,9 +135,9 @@ contract PartialKeep3rV1OracleJob is UtilsReady, Keep3r, IPartialKeep3rV1OracleJ
     function _work(address _pair) internal returns (uint256 _credits) {
         uint256 _initialGas = gasleft();
 
-        require(_workable(_pair), "PartialKeep3rV1OracleJob::work:not-workable");
+        require(_workable(_pair), "Keep3rV1OracleJob::work:not-workable");
 
-        require(_updatePair(_pair), "PartialKeep3rV1OracleJob::work:pair-not-updated");
+        require(_updatePair(_pair), "Keep3rV1OracleJob::work:pair-not-updated");
 
         _credits = _calculateCredits(_initialGas);
 
@@ -156,7 +156,7 @@ contract PartialKeep3rV1OracleJob is UtilsReady, Keep3r, IPartialKeep3rV1OracleJ
 
     // Mechanics keeper bypass
     function forceWork(address _pair) external override onlyGovernor {
-        require(_updatePair(_pair), "PartialKeep3rV1OracleJob::force-work:pair-not-updated");
+        require(_updatePair(_pair), "Keep3rV1OracleJob::force-work:pair-not-updated");
         emit ForceWorked(_pair);
     }
 
