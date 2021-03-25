@@ -2,8 +2,15 @@
 
 pragma solidity 0.6.12;
 
-import "../interfaces/utils/IGasPriceLimited.sol";
 import "../interfaces/keep3r/IChainLinkFeed.sol";
+
+interface IGasPriceLimited {
+    event SetMaxGasPrice(uint256 _maxGasPrice);
+
+    function maxGasPrice() external view returns (uint256 _maxGasPrice);
+
+    function setMaxGasPrice(uint256 _maxGasPrice) external;
+}
 
 abstract contract GasPriceLimited is IGasPriceLimited {
     IChainLinkFeed public constant FASTGAS = IChainLinkFeed(0x169E633A2D1E6c10dD91238Ba11c4A708dfEF37C);

@@ -18,21 +18,14 @@ module.exports = {
               url: process.env.MAINNET_HTTPS_URL,
             },
           },
-          // localMainnet: {
-          //   url: process.env.LOCAL_MAINNET_HTTPS_URL,
-          //   accounts: [process.env.LOCAL_MAINNET_PRIVATE_KEY],
-          // },
+          localMainnet: {
+            url: process.env.LOCAL_MAINNET_HTTPS_URL,
+            accounts: [process.env.LOCAL_MAINNET_PRIVATE_KEY],
+          },
           mainnet: {
             url: process.env.MAINNET_HTTPS_URL,
             accounts: [process.env.MAINNET_PRIVATE_KEY],
             gasPrice: 116000000000, // 116 gwei
-          },
-          staticMainnet: {
-            url: process.env.MAINNET_HTTPS_URL,
-            accounts: [
-              '0x0000000000000000000000000000000000000000000000000000000000000001',
-            ],
-            gasPrice: 1, // 1 wei
           },
         },
   solidity: {
@@ -45,9 +38,6 @@ module.exports = {
             runs: 200,
           },
         },
-      },
-      {
-        version: '0.5.17',
       },
     ],
   },
