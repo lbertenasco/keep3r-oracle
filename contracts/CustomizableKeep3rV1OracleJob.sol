@@ -136,9 +136,7 @@ contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
     // Keeper actions
     function _work() internal returns (uint256 _credits) {
         uint256 _initialGas = gasleft();
-
-        require(_workable(), "Keep3rV1OracleJob::work:not-workable");
-
+        bool hasWorked = false;
         address[] memory _workedPairs = new address[](_availablePairs.length());
         uint256 _workedPairsAmount;
 
@@ -146,13 +144,14 @@ contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
             address _pair = _availablePairs.at(i);
             if (IOracleBondedKeeper(oracleBondedKeeper).workable(_pair)) {
                 require(_updatePair(_pair), "Keep3rV1OracleJob::work:pair-not-updated");
+                hasWorked = true;
                 _workedPairs[_workedPairsAmount] = _pair;
                 _workedPairsAmount += 1;
             }
         }
 
         _credits = _calculateCredits(_initialGas);
-
+        require(hasWorked, "Keep3rV1OracleJob::should-have-worked");
         emit Worked(_workedPairs, msg.sender, _credits);
     }
 

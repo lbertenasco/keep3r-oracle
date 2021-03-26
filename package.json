@@ -28,7 +28,7 @@
     "job:add-pairs": "npx hardhat run ./scripts/add-pairs.ts",
     "job:remove-pair": "npx hardhat run ./scripts/remove-pair.ts",
     "job:force-work": "npx hardhat run ./scripts/force-work.ts",
-    "fork": "FORK=true hardhat node",
+    "fork:node": "FORK=true hardhat node",
     "fork:script": "FORK=true hardhat run",
     "fork:test": "FORK=true npm run test",
     "scripts": "ts-node utils/run-script.ts",
