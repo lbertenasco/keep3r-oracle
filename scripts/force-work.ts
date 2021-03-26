@@ -10,6 +10,7 @@ async function main() {
     type: 'input',
     name: 'address',
     message: 'What is your keep3r v1 oracle job address?',
+    initial: `${contracts.mainnet.owned.keep3rV1OracleJob}`,
   });
   if (!utils.isAddress(address)) throw new Error('Not a valid address');
   const keep3rV1OracleJob = await ethers.getContractAt(
