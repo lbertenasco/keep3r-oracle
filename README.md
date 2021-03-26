@@ -36,7 +36,7 @@ Like a customizable but it will fix the keep3r requirements. This will allow you
 npm run deploy:restricted
 ```
 
-2. Send Luciano the address of the deployed contract
+2. Create a PR appending your restricted keep3rV1 oracle job address to the end of this README
 
 ### Deploy customizable
 
