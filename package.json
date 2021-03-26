@@ -24,6 +24,10 @@
     "deploy:restricted": "npx hardhat run ./scripts/restricted/00-deploy.ts",
     "deploy:bonded": "npx hardhat run ./scripts/customizable-and-bonded/00-oracle-bonded-deploy.ts",
     "deploy:customizable": "npx hardhat run ./scripts/customizable-and-bonded/01-customizable-keep3r-deploy.ts",
+    "bonded:add-job": "npx hardhat run ./scripts/customizable-and-bonded/02-oracle-bonded-add-job",
+    "job:add-pairs": "npx hardhat run ./scripts/add-pairs.ts",
+    "job:remove-pair": "npx hardhat run ./scripts/remove-pair.ts",
+    "job:force-work": "npx hardhat run ./scripts/force-work.ts",
     "fork": "FORK=true hardhat node",
     "fork:script": "FORK=true hardhat run",
     "fork:test": "FORK=true npm run test",
@@ -36,14 +40,11 @@
     "release": "standard-version",
     "test": "TEST=true hardhat compile && TEST=true mocha",
     "test:e2e": "npm run test ./test/e2e/**/*.spec.ts",
-    "test:e2e:gas": "REPORT_GAS=1 npm run test:e2e",
-    "test:gas": "REPORT_GAS=1 npm run test",
-    "test:unit": "npm run test 'test/unit/**/*.spec.ts'",
-    "test:unit:gas": "REPORT_GAS=1 npm run test:unit"
+    "test:gas": "REPORT_GAS=1 npx hardhat test",
+    "test:unit": "npm run test 'test/unit/**/*.spec.ts'"
   },
   "dependencies": {
-    "prompt-confirm": "2.0.4",
-    "queue-microtask": "1.2.3"
+    "prompt-confirm": "2.0.4"
   },
   "devDependencies": {
     "@commitlint/cli": "12.0.1",
@@ -70,7 +71,7 @@
     "hardhat-gas-reporter": "1.0.4",
     "hardhat-preprocessor": "0.1.2",
     "husky": "5.2.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "pinst": "2.1.6",
     "prettier": "2.2.1",
     "prettier-plugin-solidity": "1.0.0-beta.6",

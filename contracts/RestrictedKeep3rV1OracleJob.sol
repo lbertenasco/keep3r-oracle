@@ -17,7 +17,7 @@ contract RestrictedKeep3rV1OracleJob is CustomizableKeep3rV1OracleJob {
             0, // min bond
             0, // earned
             false, // age
-            0xA8646cE5d983E996EbA22eb39e5956653ec63762 // oracle bonded keep3r
+            0xA8646cE5d983E996EbA22eb39e5956653ec63762 // yearn's oracle bonded keep3r
         )
     {}
 

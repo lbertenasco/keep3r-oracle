@@ -4,6 +4,14 @@
 
 Having a template of a job that could be deployed into the keep3r network that will allow updating pairs in Keep3rV1Oracle.
 
+## Requirements
+
+In order to use this repo you must copy the `.env.example` file and fill the parameters correctly.
+
+```bash
+cp .env.example .env
+```
+
 ## Contracts
 
 ### Oracle Bonded Keep3r
@@ -68,3 +76,7 @@ npm run job:remove-pair
 ```bash
 npm run job:force-work
 ```
+
+## Allowed restricted oracles v1 jobs by Yearn's Oracle Bonded Keeper
+
+- [0x5efd850044ba76b8ffe49437cb301be3568ba696](https://etherscan.io/address/0x5efd850044ba76b8ffe49437cb301be3568ba696)
