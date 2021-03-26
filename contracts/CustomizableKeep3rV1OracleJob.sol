@@ -15,7 +15,7 @@ interface ICustomizableKeep3rV1OracleJob is IKeep3rJob {
     event PairRemoved(address _pair);
 
     // Actions by Keeper
-    event Worked(address _pair, address _keeper, uint256 _credits);
+    event Worked(address[] _pair, address _keeper, uint256 _credits);
 
     // Actions forced by Governor
     event ForceWorked(address _pair);
@@ -30,14 +30,14 @@ interface ICustomizableKeep3rV1OracleJob is IKeep3rJob {
     // Getters
     function oracleBondedKeeper() external view returns (address _oracleBondedKeeper);
 
-    function workable(address _pair) external view returns (bool);
+    function workable() external view returns (bool);
 
     function pairs() external view returns (address[] memory _pairs);
 
     // Keeper actions
-    function work(address _pair) external returns (uint256 _credits);
+    function work() external returns (uint256 _credits);
 
-    // Mechanics keeper bypass
+    // Bypass
     function forceWork(address _pair) external;
 }
 
@@ -122,30 +122,42 @@ contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
     }
 
     // Keeper view actions
-    function workable(address _pair) external view override notPaused returns (bool) {
-        return _workable(_pair);
+    function workable() external view override notPaused returns (bool) {
+        return _workable();
     }
 
-    function _workable(address _pair) internal view returns (bool) {
-        require(_availablePairs.contains(_pair), "Keep3rV1OracleJob::workable:pair-not-found");
-        return IOracleBondedKeeper(oracleBondedKeeper).workable(_pair);
+    function _workable() internal view returns (bool) {
+        for (uint256 i; i < _availablePairs.length(); i++) {
+            if (IOracleBondedKeeper(oracleBondedKeeper).workable(_availablePairs.at(i))) return true;
+        }
+        return false;
     }
 
     // Keeper actions
-    function _work(address _pair) internal returns (uint256 _credits) {
+    function _work() internal returns (uint256 _credits) {
         uint256 _initialGas = gasleft();
 
-        require(_workable(_pair), "Keep3rV1OracleJob::work:not-workable");
+        require(_workable(), "Keep3rV1OracleJob::work:not-workable");
 
-        require(_updatePair(_pair), "Keep3rV1OracleJob::work:pair-not-updated");
+        address[] memory _workedPairs = new address[](_availablePairs.length());
+        uint256 _workedPairsAmount;
+
+        for (uint256 i; i < _availablePairs.length(); i++) {
+            address _pair = _availablePairs.at(i);
+            if (IOracleBondedKeeper(oracleBondedKeeper).workable(_pair)) {
+                require(_updatePair(_pair), "Keep3rV1OracleJob::work:pair-not-updated");
+                _workedPairs[_workedPairsAmount] = _pair;
+                _workedPairsAmount += 1;
+            }
+        }
 
         _credits = _calculateCredits(_initialGas);
 
-        emit Worked(_pair, msg.sender, _credits);
+        emit Worked(_workedPairs, msg.sender, _credits);
     }
 
-    function work(address _pair) public override notPaused onlyKeeper returns (uint256 _credits) {
-        _credits = _work(_pair);
+    function work() public override notPaused onlyKeeper returns (uint256 _credits) {
+        _credits = _work();
         _paysKeeperInTokens(msg.sender, _credits);
     }
 
@@ -154,7 +166,7 @@ contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
         return _getQuoteLimit(_initialGas).mul(rewardMultiplier).div(PRECISION);
     }
 
-    // Mechanics keeper bypass
+    // Bypass
     function forceWork(address _pair) external override onlyGovernor {
         require(_updatePair(_pair), "Keep3rV1OracleJob::force-work:pair-not-updated");
         emit ForceWorked(_pair);
