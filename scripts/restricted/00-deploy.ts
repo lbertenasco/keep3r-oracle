@@ -8,27 +8,28 @@ const prompt = new Confirm({
 
 async function main() {
   await run('compile');
-  const fixedPartialKeep3rV1OracleJobContract = await ethers.getContractFactory(
-    'contracts/FixedPartialKeep3rV1OracleJob.sol:FixedPartialKeep3rV1OracleJob'
+  const restrictedKeep3rV1OracleJobContract = await ethers.getContractFactory(
+    'contracts/RestrictedKeep3rV1OracleJob.sol:RestrictedKeep3rV1OracleJob'
   );
-  await promptAndSubmit(fixedPartialKeep3rV1OracleJobContract);
+  await promptAndSubmit(restrictedKeep3rV1OracleJobContract);
 }
 
-function promptAndSubmit(
-  fixedPartialKeep3rV1OracleJobContract: ContractFactory
-) {
+function promptAndSubmit(restrictedKeep3rV1OracleJobContract: ContractFactory) {
   return new Promise<void>(async (resolve, reject) => {
     const [owner] = await ethers.getSigners();
     console.log('Deployer address:', owner.address);
     try {
       prompt.run().then(async (answer: boolean) => {
         if (answer) {
-          console.time('FixedPartialKeep3rV1OracleJob deployed');
-          const fixedPartialKeep3rV1OracleJob = await fixedPartialKeep3rV1OracleJobContract.deploy();
-          console.timeEnd('FixedPartialKeep3rV1OracleJob deployed');
+          console.time('RestrictedKeep3rV1OracleJob deployed');
+          const restrictedKeep3rV1OracleJob = await restrictedKeep3rV1OracleJobContract.deploy();
+          console.timeEnd('RestrictedKeep3rV1OracleJob deployed');
           console.log(
-            'Fixed partial keep3r v1 oracle job deployed with address:',
-            fixedPartialKeep3rV1OracleJob.address
+            'Restricted keep3r v1 oracle job deployed with address:',
+            restrictedKeep3rV1OracleJob.address
+          );
+          console.log(
+            'IMPORTANT: Please remember to add this address into /utils/contract.ts file under owned.keep3rV1OracleJob'
           );
           resolve();
         } else {

@@ -7,7 +7,7 @@ const { Form, Confirm } = require('enquirer');
 const deploymentInformationPrompt = new Form({
   name: 'deploy',
   message:
-    'Please provide the following information for partial keep3rv1 oracle job deployment:',
+    'Please provide the following information for customizable keep3rv1 oracle job deployment:',
   choices: [
     {
       name: 'keep3rV1',
@@ -37,13 +37,15 @@ const deploymentInformationPrompt = new Form({
 
 async function main() {
   await run('compile');
-  const partialKeep3rV1OracleJobContract = await ethers.getContractFactory(
-    'contracts/PartialKeep3rV1OracleJob.sol:PartialKeep3rV1OracleJob'
+  const customizableKeep3rV1OracleJobContract = await ethers.getContractFactory(
+    'contracts/CustomizableKeep3rV1OracleJob.sol:CustomizableKeep3rV1OracleJob'
   );
-  await promptAndSubmit(partialKeep3rV1OracleJobContract);
+  await promptAndSubmit(customizableKeep3rV1OracleJobContract);
 }
 
-function promptAndSubmit(partialKeep3rV1OracleJobContract: ContractFactory) {
+function promptAndSubmit(
+  customizableKeep3rV1OracleJobContract: ContractFactory
+) {
   return new Promise<void>(async (resolve, reject) => {
     const [owner] = await ethers.getSigners();
     console.log('Deployer address:', owner.address);
@@ -51,7 +53,7 @@ function promptAndSubmit(partialKeep3rV1OracleJobContract: ContractFactory) {
       deploymentInformationPrompt.run().then(async (answer: any) => {
         if (answer) {
           const confirmPrompt = new Confirm({
-            message: `Do you wish to continue the deployment of partial keep3r v1 oracle job with the next parameters:
+            message: `Do you wish to continue the deployment of customizable keep3r v1 oracle job with the next parameters:
             Keep3rV1 address: ${answer.keep3rV1},
             Bond: ${answer.bond},
             Minimum KP3Rs bonded by worker: ${answer.minBond},
@@ -62,8 +64,8 @@ function promptAndSubmit(partialKeep3rV1OracleJobContract: ContractFactory) {
           });
           confirmPrompt.run().then(async (confirmAnswer: boolean) => {
             if (confirmAnswer) {
-              console.time('PartialKeep3rV1OracleJob deployed');
-              const partialKeep3rV1OracleJob = await partialKeep3rV1OracleJobContract.deploy(
+              console.time('CustomizableKeep3rV1OracleJob deployed');
+              const customizableKeep3rV1OracleJob = await customizableKeep3rV1OracleJobContract.deploy(
                 answer.keep3rV1,
                 answer.bond,
                 answer.minBond,
@@ -72,13 +74,13 @@ function promptAndSubmit(partialKeep3rV1OracleJobContract: ContractFactory) {
                 answer.onlyEOA === 'true',
                 answer.oracleBondedKeeper
               );
-              console.timeEnd('PartialKeep3rV1OracleJob deployed');
+              console.timeEnd('CustomizableKeep3rV1OracleJob deployed');
               console.log(
                 'Partial keep3r v1 oracle job deployed with address:',
-                partialKeep3rV1OracleJob.address
+                customizableKeep3rV1OracleJob.address
               );
               console.log(
-                'IMPORTANT: Please remember to add this address into /utils/contract.ts file under owned.partialKeep3rV1OracleJob'
+                'IMPORTANT: Please remember to add this address into /utils/contract.ts file under owned.keep3rV1OracleJob'
               );
               resolve();
             } else {

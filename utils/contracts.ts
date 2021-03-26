@@ -6,8 +6,8 @@ export default {
       keeperV1Oracle: '0x73353801921417f465377c8d898c6f4c0270282c',
     },
     owned: {
-      oracleBondedKeeper: '0x1f6EC6d7c1938d3de8cd8EB12f8124655C24486d',
-      partialKeep3rV1OracleJob: '0xfC004381b66bA9eb90255609D885Fe375033EB82',
+      oracleBondedKeeper: '',
+      keep3rV1OracleJob: '',
     },
   },
 };

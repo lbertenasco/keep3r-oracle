@@ -10,7 +10,7 @@ import "./utils/GasPriceLimited.sol";
 import "./interfaces/jobs/IKeep3rJob.sol";
 import "./OracleBondedKeeper.sol";
 
-interface IPartialKeep3rV1OracleJob is IKeep3rJob {
+interface ICustomizableKeep3rV1OracleJob is IKeep3rJob {
     event PairAdded(address _pair);
     event PairRemoved(address _pair);
 
@@ -41,7 +41,7 @@ interface IPartialKeep3rV1OracleJob is IKeep3rJob {
     function forceWork(address _pair) external;
 }
 
-contract PartialKeep3rV1OracleJob is UtilsReady, Keep3r, IPartialKeep3rV1OracleJob {
+contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3rV1OracleJob {
     using SafeMath for uint256;
 
     uint256 public constant PRECISION = 1_000;
@@ -76,7 +76,7 @@ contract PartialKeep3rV1OracleJob is UtilsReady, Keep3r, IPartialKeep3rV1OracleJ
         uint256 _earned,
         uint256 _age,
         bool _onlyEOA
-    ) external override onlyGovernor {
+    ) external virtual override onlyGovernor {
         _setKeep3rRequirements(_bond, _minBond, _earned, _age, _onlyEOA);
     }
 
