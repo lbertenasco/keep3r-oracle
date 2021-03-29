@@ -7,7 +7,7 @@ const { Form, Confirm } = require('enquirer');
 const deploymentInformationPrompt = new Form({
   name: 'deploy',
   message:
-    'Please provide the following information for partial keep3rv1 oracle job deployment:',
+    'Please provide the following information for oracle bonded deployment:',
   choices: [
     {
       name: 'keep3rV1',
@@ -15,9 +15,9 @@ const deploymentInformationPrompt = new Form({
       initial: contracts.mainnet.keep3r,
     },
     {
-      name: 'keep3rV1Oracle',
-      message: 'Keep3r V1 oracle address',
-      initial: contracts.mainnet.yfi.keeperV1Oracle,
+      name: 'keep3rV2OracleFactory',
+      message: 'Keep3r V2 Oracle Factory address',
+      initial: contracts.mainnet.yfi.keeperV2OracleFactory,
     },
   ],
 });
@@ -39,14 +39,14 @@ function promptAndSubmit(oracleBondedKeeperContract: ContractFactory) {
         const prompt = new Confirm({
           message: `Do you wish to deploy oracle bonded keeper with the following parameters:
           Keep3rV1 address: ${answer.keep3rV1}
-          Keep3rV1 oracle address: ${answer.keep3rV1Oracle}`,
+          Keep3rV2 Oracle Factory address: ${answer.keep3rV2OracleFactory}`,
         });
         prompt.run().then(async (confirmAnswer: boolean) => {
           if (confirmAnswer) {
             console.time('OracleBondedKeeper deployed');
             const oracleBondedKeeper = await oracleBondedKeeperContract.deploy(
               answer.keep3rV1,
-              answer.keep3rV1Oracle
+              answer.keep3rV2OracleFactory
             );
             console.timeEnd('OracleBondedKeeper deployed');
             console.log(

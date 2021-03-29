@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@lbertenasco/contract-utils/contracts/abstract/UtilsReady.sol";
 import "@lbertenasco/contract-utils/contracts/keep3r/Keep3rAbstract.sol";
 import "./utils/GasPriceLimited.sol";
@@ -10,7 +8,7 @@ import "./utils/GasPriceLimited.sol";
 import "./interfaces/jobs/IKeep3rJob.sol";
 import "./OracleBondedKeeper.sol";
 
-interface ICustomizableKeep3rV1OracleJob is IKeep3rJob {
+interface ICustomizableKeep3rV2OracleJob is IKeep3rJob {
     event PairAdded(address _pair);
     event PairRemoved(address _pair);
 
@@ -41,9 +39,7 @@ interface ICustomizableKeep3rV1OracleJob is IKeep3rJob {
     function forceWork(address _pair) external;
 }
 
-contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3rV1OracleJob {
-    using SafeMath for uint256;
-
+contract CustomizableKeep3rV2OracleJob is UtilsReady, Keep3r, ICustomizableKeep3rV2OracleJob {
     uint256 public constant PRECISION = 1_000;
     uint256 public constant MAX_REWARD_MULTIPLIER = 1 * PRECISION; // 1x max reward multiplier
     uint256 public override rewardMultiplier = MAX_REWARD_MULTIPLIER;
@@ -86,7 +82,7 @@ contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
     }
 
     function _setRewardMultiplier(uint256 _rewardMultiplier) internal {
-        require(_rewardMultiplier <= MAX_REWARD_MULTIPLIER, "Keep3rV1OracleJob::set-reward-multiplier:multiplier-exceeds-max");
+        require(_rewardMultiplier <= MAX_REWARD_MULTIPLIER, "Keep3rV2OracleJob::set-reward-multiplier:multiplier-exceeds-max");
         rewardMultiplier = _rewardMultiplier;
     }
 
@@ -102,13 +98,13 @@ contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
     }
 
     function _addPair(address _pair) internal {
-        require(!_availablePairs.contains(_pair), "Keep3rV1OracleJob::add-pair:pair-already-added");
+        require(!_availablePairs.contains(_pair), "Keep3rV2OracleJob::add-pair:pair-already-added");
         _availablePairs.add(_pair);
         emit PairAdded(_pair);
     }
 
     function removePair(address _pair) external override onlyGovernor {
-        require(_availablePairs.contains(_pair), "Keep3rV1OracleJob::remove-pair:pair-not-found");
+        require(_availablePairs.contains(_pair), "Keep3rV2OracleJob::remove-pair:pair-not-found");
         _availablePairs.remove(_pair);
         emit PairRemoved(_pair);
     }
@@ -143,7 +139,7 @@ contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
         for (uint256 i; i < _availablePairs.length(); i++) {
             address _pair = _availablePairs.at(i);
             if (IOracleBondedKeeper(oracleBondedKeeper).workable(_pair)) {
-                require(_updatePair(_pair), "Keep3rV1OracleJob::work:pair-not-updated");
+                require(_updatePair(_pair), "Keep3rV2OracleJob::work:pair-not-updated");
                 hasWorked = true;
                 _workedPairs[_workedPairsAmount] = _pair;
                 _workedPairsAmount += 1;
@@ -151,7 +147,7 @@ contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
         }
 
         _credits = _calculateCredits(_initialGas);
-        require(hasWorked, "Keep3rV1OracleJob::should-have-worked");
+        require(hasWorked, "Keep3rV2OracleJob::should-have-worked");
         emit Worked(_workedPairs, msg.sender, _credits);
     }
 
@@ -167,7 +163,7 @@ contract CustomizableKeep3rV1OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
 
     // Bypass
     function forceWork(address _pair) external override onlyGovernor {
-        require(_updatePair(_pair), "Keep3rV1OracleJob::force-work:pair-not-updated");
+        require(_updatePair(_pair), "Keep3rV2OracleJob::force-work:pair-not-updated");
         emit ForceWorked(_pair);
     }
 

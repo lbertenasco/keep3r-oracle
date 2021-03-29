@@ -2,22 +2,19 @@
 
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "./CustomizableKeep3rV2OracleJob.sol";
 
-import "./OracleBondedKeeper.sol";
-import "./CustomizableKeep3rV1OracleJob.sol";
-
-contract RestrictedKeep3rV1OracleJob is CustomizableKeep3rV1OracleJob {
+contract RestrictedKeep3rV2OracleJob is CustomizableKeep3rV2OracleJob {
     constructor()
         public
-        CustomizableKeep3rV1OracleJob(
+        CustomizableKeep3rV2OracleJob(
             0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44, // keep3r
             0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44, // bond
-            200 ether, // bond
+            0, // bond
             0, // min bond
             0, // earned
             false, // age
-            0xA8646cE5d983E996EbA22eb39e5956653ec63762 // yearn's oracle bonded keep3r
+            address(0) // TODO: Set new oracle bonded keep3r v2 address
         )
     {}
 
@@ -33,6 +30,6 @@ contract RestrictedKeep3rV1OracleJob is CustomizableKeep3rV1OracleJob {
         _earned;
         _age;
         _onlyEOA;
-        revert("Keep3rV1OracleJob::not-allowed");
+        revert("Keep3rV2OracleJob::not-allowed");
     }
 }

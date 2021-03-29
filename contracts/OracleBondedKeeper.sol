@@ -5,8 +5,7 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "@lbertenasco/contract-utils/contracts/abstract/UtilsReady.sol";
 import "@lbertenasco/contract-utils/interfaces/keep3r/IKeep3rV1.sol";
-
-import "./interfaces/keep3r/IUniswapV2SlidingOracle.sol";
+import "./interfaces/keep3r/IKeep3rV2OracleFactory.sol";
 
 interface IOracleBondedKeeper {
     event JobAdded(address _job);
@@ -15,7 +14,7 @@ interface IOracleBondedKeeper {
     // Getters
     function keep3r() external view returns (address _keep3r);
 
-    function keep3rV1Oracle() external view returns (address _keep3rV1Oracle);
+    function keep3rOracleFactory() external view returns (address _keep3rOracleFactory);
 
     function jobs() external view returns (address[] memory);
 
@@ -47,11 +46,11 @@ contract OracleBondedKeeper is UtilsReady, IOracleBondedKeeper {
     EnumerableSet.AddressSet internal _validJobs;
 
     address public immutable override keep3r;
-    address public immutable override keep3rV1Oracle;
+    address public immutable override keep3rOracleFactory;
 
-    constructor(address _keep3r, address _keep3rV1Oracle) public UtilsReady() {
+    constructor(address _keep3r, address _keep3rOracleFactory) public UtilsReady() {
         keep3r = _keep3r;
-        keep3rV1Oracle = _keep3rV1Oracle;
+        keep3rOracleFactory = _keep3rOracleFactory;
     }
 
     // Setters
@@ -85,11 +84,12 @@ contract OracleBondedKeeper is UtilsReady, IOracleBondedKeeper {
 
     // Jobs functions
     function workable(address _pair) external view override returns (bool) {
-        return IUniswapV2SlidingOracle(keep3rV1Oracle).workable(_pair);
+        return IKeep3rV2OracleFactory(keep3rOracleFactory).workable(_pair);
     }
 
     function updatePair(address _pair) external override onlyValidJob returns (bool _updated) {
-        return IUniswapV2SlidingOracle(keep3rV1Oracle).updatePair(_pair);
+        IKeep3rV2OracleFactory(keep3rOracleFactory).update(_pair);
+        return true;
     }
 
     modifier onlyValidJob() {

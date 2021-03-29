@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.6.12;
 
 import "../interfaces/keep3r/IChainLinkFeed.sol";
