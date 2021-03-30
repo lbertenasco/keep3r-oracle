@@ -1,8 +1,8 @@
-# Keep3rV1 Oracle Job
+# Keep3rV2 Oracle Job
 
 ## Objective
 
-Having a template of a job that could be deployed into the keep3r network that will allow updating pairs in Keep3rV1Oracle.
+Having a template of a keep3r job that could be deployed into keep3r network that will allow updating custom pairs in Keep3rV2Oracle.
 
 ## Requirements
 
@@ -14,50 +14,31 @@ cp .env.example .env
 
 ## Contracts
 
-### Oracle Bonded Keep3r
+### Keep3rV2 Oracle Job
 
-If any special requirements are set up for keep3r worker's this contract will be used as a proxy to comply with those requirements. Also it will manage what keep3r v1 oracle jobs can use it as a proxy via the allowed list. &nbsp;
+It will store what pairs should be updated (via addPairs, removePair), and also keep3r requirements for workers if needed (minBond, age, onlyEOA, reward multipliers).
 
-### Customizable Keep3rV1 Oracle Job
+## Deployment
 
-It will be the one who storage what pairs should be updated (via addPairs, removePair), and also modify keep3r requirements (minBond, age, onlyEOA, reward multipliers).
+For the job to be able to work Keep3rOracleV2, it should bond and be activated in the keep3r network. Bonding will start as soon as the contract is deployed, but it should be activated 3 days after bonding.
 
-### Restricted Keep3rV1 Oracle Job
+1. Deploy Keep3rV2 Oracle Job
 
-Like a customizable but it will fix the keep3r requirements. This will allow you to use Yean's oracle bonded keep3r.
+```bash
+npm run deploy:job
+```
+
+2. Wait for 3 days so you can activate your job in the keep3r network
+
+3. Activate
+
+```bash
+npm run job:activate
+```
+
+4. Register the following keep3r official [docs](https://github.com/keep3r-network/keep3r.network/#registering-a-job)
 
 ## Scripts
-
-### Deploy restricted
-
-1. Deploy Restricted Keep3rV1 Oracle Job
-
-```bash
-npm run deploy:restricted
-```
-
-2. Create a PR appending your restricted keep3rV1 oracle job address to the end of this README
-
-### Deploy customizable
-
-1. Deploy Oracle Bonded Keeper
-
-```bash
-npm run deploy:bonded
-```
-
-2. Save the address in utils/contracts.ts under `mainnet.owned.oracleBondedKeeper`
-3. Deploy Customizable Keep3rV1 Oracle Job
-
-```bash
-npm run deploy:customizable
-```
-
-4. Add Customizable Keep3rV1 Oracle Job to allowed jobs in Oracle Bonded Keep3r
-
-```bash
-npm run bonded:add-job
-```
 
 ### Add Pairs
 
@@ -76,7 +57,3 @@ npm run job:remove-pair
 ```bash
 npm run job:force-work
 ```
-
-## Allowed restricted oracles v1 jobs by Yearn's Oracle Bonded Keeper
-
-- [0x5efd850044ba76b8ffe49437cb301be3568ba696](https://etherscan.io/address/0x5efd850044ba76b8ffe49437cb301be3568ba696)

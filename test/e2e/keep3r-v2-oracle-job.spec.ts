@@ -149,15 +149,18 @@ describe('Keep3rV2OracleJob', function () {
       });
       when('keep3r v2 oracle job is not a keeper', () => {
         given(async function () {
+          await keep3r.bond(keep3r.address, 0);
+          await evm.advanceTimeAndBlock(
+            moment.duration(3, 'days').as('seconds')
+          );
+          await keep3r.activate(keep3r.address);
           await keep3r
             .connect(keep3rGovernance)
             .revoke(keep3rV2OracleJob.address);
           this.workTx = keep3rV2OracleJob.work();
         });
         then('tx is reverted with reason', async function () {
-          await expect(this.workTx).to.be.revertedWith(
-            'keep3r::isKeeper:keeper-is-not-registered'
-          );
+          await expect(this.workTx).to.be.revertedWith('!K');
         });
       });
       when('everything is set up', () => {
