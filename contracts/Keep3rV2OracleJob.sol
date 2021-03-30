@@ -3,12 +3,10 @@ pragma solidity 0.6.12;
 
 import "@lbertenasco/contract-utils/contracts/abstract/UtilsReady.sol";
 import "@lbertenasco/contract-utils/contracts/keep3r/Keep3rAbstract.sol";
-import "./utils/GasPriceLimited.sol";
-
+import "./interfaces/keep3r/IKeep3rV2OracleFactory.sol";
 import "./interfaces/jobs/IKeep3rJob.sol";
-import "./OracleBondedKeeper.sol";
 
-interface ICustomizableKeep3rV2OracleJob is IKeep3rJob {
+interface IKeep3rV2OracleJob is IKeep3rJob {
     event PairAdded(address _pair);
     event PairRemoved(address _pair);
 
@@ -18,6 +16,15 @@ interface ICustomizableKeep3rV2OracleJob is IKeep3rJob {
     // Actions forced by Governor
     event ForceWorked(address _pair);
 
+    // Getters
+    function keep3rV2OracleFactory() external view returns (address);
+
+    function workable() external view returns (bool);
+
+    function workable(address _pair) external view returns (bool);
+
+    function pairs() external view returns (address[] memory _pairs);
+
     // Setters
     function addPairs(address[] calldata _pairs) external;
 
@@ -25,28 +32,29 @@ interface ICustomizableKeep3rV2OracleJob is IKeep3rJob {
 
     function removePair(address _pair) external;
 
-    // Getters
-    function oracleBondedKeeper() external view returns (address _oracleBondedKeeper);
-
-    function workable() external view returns (bool);
-
-    function pairs() external view returns (address[] memory _pairs);
-
-    // Keeper actions
+    // Worker actions
     function work() external returns (uint256 _credits);
 
-    // Bypass
     function forceWork(address _pair) external;
+
+    // Governor Keeper Bond
+    function keep3rBond(address bonding, uint256 amount) external;
+
+    function keep3rActivate(address bonding) external;
+
+    function keep3rUnbond(address bonding, uint256 amount) external;
+
+    function keep3rWithdraw(address bonding) external;
 }
 
-contract CustomizableKeep3rV2OracleJob is UtilsReady, Keep3r, ICustomizableKeep3rV2OracleJob {
+contract Keep3rV2OracleJob is UtilsReady, Keep3r, IKeep3rV2OracleJob {
     uint256 public constant PRECISION = 1_000;
     uint256 public constant MAX_REWARD_MULTIPLIER = 1 * PRECISION; // 1x max reward multiplier
     uint256 public override rewardMultiplier = MAX_REWARD_MULTIPLIER;
 
     EnumerableSet.AddressSet internal _availablePairs;
 
-    address public immutable override oracleBondedKeeper;
+    address public immutable override keep3rV2OracleFactory;
 
     constructor(
         address _keep3r,
@@ -55,10 +63,11 @@ contract CustomizableKeep3rV2OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
         uint256 _earned,
         uint256 _age,
         bool _onlyEOA,
-        address _oracleBondedKeeper
+        address _keep3rV2OracleFactory
     ) public UtilsReady() Keep3r(_keep3r) {
         _setKeep3rRequirements(_bond, _minBond, _earned, _age, _onlyEOA);
-        oracleBondedKeeper = _oracleBondedKeeper;
+        keep3rV2OracleFactory = _keep3rV2OracleFactory;
+        keep3rBond(_keep3r, 0);
     }
 
     // Keep3r Setters
@@ -119,17 +128,17 @@ contract CustomizableKeep3rV2OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
 
     // Keeper view actions
     function workable() external view override notPaused returns (bool) {
-        return _workable();
-    }
-
-    function _workable() internal view returns (bool) {
         for (uint256 i; i < _availablePairs.length(); i++) {
-            if (IOracleBondedKeeper(oracleBondedKeeper).workable(_availablePairs.at(i))) return true;
+            if (IKeep3rV2OracleFactory(keep3rV2OracleFactory).workable(_availablePairs.at(i))) return true;
         }
         return false;
     }
 
-    // Keeper actions
+    function workable(address _pair) external view override notPaused returns (bool) {
+        return IKeep3rV2OracleFactory(keep3rV2OracleFactory).workable(_pair);
+    }
+
+    // Worker actions
     function _work() internal returns (uint256 _credits) {
         uint256 _initialGas = gasleft();
         bool hasWorked = false;
@@ -138,15 +147,14 @@ contract CustomizableKeep3rV2OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
 
         for (uint256 i; i < _availablePairs.length(); i++) {
             address _pair = _availablePairs.at(i);
-            if (IOracleBondedKeeper(oracleBondedKeeper).workable(_pair)) {
-                require(_updatePair(_pair), "Keep3rV2OracleJob::work:pair-not-updated");
+            if (IKeep3rV2OracleFactory(keep3rV2OracleFactory).workable(_pair)) {
+                IKeep3rV2OracleFactory(keep3rV2OracleFactory).update(_pair);
                 hasWorked = true;
                 _workedPairs[_workedPairsAmount] = _pair;
                 _workedPairsAmount += 1;
             }
         }
-
-        _credits = _calculateCredits(_initialGas);
+        _credits = _getQuoteLimit(_initialGas).mul(rewardMultiplier).div(PRECISION);
         require(hasWorked, "Keep3rV2OracleJob::should-have-worked");
         emit Worked(_workedPairs, msg.sender, _credits);
     }
@@ -156,18 +164,26 @@ contract CustomizableKeep3rV2OracleJob is UtilsReady, Keep3r, ICustomizableKeep3
         _paysKeeperInTokens(msg.sender, _credits);
     }
 
-    function _calculateCredits(uint256 _initialGas) internal view returns (uint256 _credits) {
-        // Gets default credits from KP3R_Helper and applies job reward multiplier
-        return _getQuoteLimit(_initialGas).mul(rewardMultiplier).div(PRECISION);
-    }
-
-    // Bypass
-    function forceWork(address _pair) external override onlyGovernor {
-        require(_updatePair(_pair), "Keep3rV2OracleJob::force-work:pair-not-updated");
+    function forceWork(address _pair) public override onlyGovernor {
+        IKeep3rV2OracleFactory(keep3rV2OracleFactory).update(_pair);
         emit ForceWorked(_pair);
     }
 
-    function _updatePair(address _pair) internal returns (bool _updated) {
-        return IOracleBondedKeeper(oracleBondedKeeper).updatePair(_pair);
+    // Keep3r Network Actions
+
+    function keep3rBond(address _bonding, uint256 _amount) public override onlyGovernor {
+        IKeep3rV1(_Keep3r).bond(_bonding, _amount);
+    }
+
+    function keep3rActivate(address _bonding) public override onlyGovernor {
+        IKeep3rV1(_Keep3r).activate(_bonding);
+    }
+
+    function keep3rUnbond(address _bonding, uint256 _amount) public override onlyGovernor {
+        IKeep3rV1(_Keep3r).unbond(_bonding, _amount);
+    }
+
+    function keep3rWithdraw(address _bonding) public override onlyGovernor {
+        IKeep3rV1(_Keep3r).withdraw(_bonding);
     }
 }
