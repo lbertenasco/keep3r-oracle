@@ -39,6 +39,26 @@ module.exports = {
         },
       },
     ],
+    overrides: {
+      'contracts/Keep3rV2Oracle.sol': {
+        version: '0.8.2',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 99999,
+          },
+        },
+      },
+      'contracts/Keep3rV2OracleFactory.sol': {
+        version: '0.8.2',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 99999,
+          },
+        },
+      },
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS ? true : false,

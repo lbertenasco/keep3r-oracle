@@ -7,7 +7,10 @@ import "./interfaces/keep3r/IKeep3rV2OracleFactory.sol";
 import "./interfaces/jobs/IKeep3rJob.sol";
 
 interface IKeep3rV2OracleJob is IKeep3rJob {
+    event Keep3rOracleFactorySet(address _keep3rV2OracleFactory);
+
     event PairAdded(address _pair);
+
     event PairRemoved(address _pair);
 
     // Actions by Keeper
@@ -24,6 +27,8 @@ interface IKeep3rV2OracleJob is IKeep3rJob {
     function pairs() external view returns (address[] memory _pairs);
 
     // Setters
+    function setKeep3rV2OracleFactory(address _keep3rV2OracleFactory) external;
+
     function addPairs(address[] calldata _pairs) external;
 
     function addPair(address _pair) external;
@@ -52,7 +57,7 @@ contract Keep3rV2OracleJob is UtilsReady, Keep3r, IKeep3rV2OracleJob {
 
     EnumerableSet.AddressSet internal _availablePairs;
 
-    address public immutable override keep3rV2OracleFactory;
+    address public override keep3rV2OracleFactory;
 
     constructor(
         address _keep3r,
@@ -64,7 +69,7 @@ contract Keep3rV2OracleJob is UtilsReady, Keep3r, IKeep3rV2OracleJob {
         address _keep3rV2OracleFactory
     ) public UtilsReady() Keep3r(_keep3r) {
         _setKeep3rRequirements(_bond, _minBond, _earned, _age, _onlyEOA);
-        keep3rV2OracleFactory = _keep3rV2OracleFactory;
+        _setKeep3rV2OracleFactory(_keep3rV2OracleFactory);
         keep3rBond(_keep3r, 0);
     }
 
@@ -79,8 +84,18 @@ contract Keep3rV2OracleJob is UtilsReady, Keep3r, IKeep3rV2OracleJob {
         uint256 _earned,
         uint256 _age,
         bool _onlyEOA
-    ) external virtual override onlyGovernor {
+    ) external override onlyGovernor {
         _setKeep3rRequirements(_bond, _minBond, _earned, _age, _onlyEOA);
+    }
+
+    function setKeep3rV2OracleFactory(address _keep3rV2OracleFactory) external override onlyGovernor {
+        _setKeep3rV2OracleFactory(_keep3rV2OracleFactory);
+    }
+
+    function _setKeep3rV2OracleFactory(address _keep3rV2OracleFactory) internal {
+        require(_keep3rV2OracleFactory != address(0), "Keep3rV2OracleJob::zero-address");
+        keep3rV2OracleFactory = _keep3rV2OracleFactory;
+        emit Keep3rOracleFactorySet(_keep3rV2OracleFactory);
     }
 
     function setRewardMultiplier(uint256 _rewardMultiplier) external override onlyGovernor {
@@ -163,7 +178,6 @@ contract Keep3rV2OracleJob is UtilsReady, Keep3r, IKeep3rV2OracleJob {
     }
 
     // Keep3r Network Actions
-
     function keep3rBond(address _bonding, uint256 _amount) public override onlyGovernor {
         IKeep3rV1(_Keep3r).bond(_bonding, _amount);
     }
