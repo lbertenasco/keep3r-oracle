@@ -1,2 +1,4 @@
 node_modules
 contracts/mock
+contracts/Keep3rV2Oracle.sol
+contracts/Keep3rV2OracleFactory.sol
