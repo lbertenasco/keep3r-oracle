@@ -1,7 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
+import "@lbertenasco/contract-utils/interfaces/keep3r/IKeep3rV1.sol";
+import "./IKeep3rV2Oracle.sol";
+
 interface IKeep3rV2OracleFactory {
+    function governance() external view returns (address);
+
+    function pendingGovernance() external view returns (address);
+
+    function KP3R() external view returns (IKeep3rV1);
+
+    function feeds(address _pair) external view returns (IKeep3rV2Oracle);
+
     function setGovernance(address _governance) external;
 
     function acceptGovernance() external;
