@@ -2,12 +2,7 @@ import _ from 'lodash';
 import { Contract, utils } from 'ethers';
 import { run, ethers } from 'hardhat';
 import contracts from '../utils/contracts';
-const { prompt, List, Confirm } = require('enquirer');
-
-const pairsList = new List({
-  name: 'keywords',
-  message: 'Input all pairs to add comma-separated',
-});
+const { prompt, Confirm } = require('enquirer');
 
 async function main() {
   await run('compile');
@@ -29,25 +24,23 @@ function promptAndSubmit(keep3rV2OracleJob: Contract) {
   return new Promise<void>(async (resolve, reject) => {
     const [owner] = await ethers.getSigners();
     try {
-      pairsList.run().then(async (pairs: string[]) => {
-        _.forEach(pairs, (pair) => {
-          if (!utils.isAddress(pair)) throw new Error('Not a valid address');
-        });
-        const confirmationPrompt = new Confirm({
-          message: `Do you wish to add the pairs: ${pairs.join(', ')} ?`,
-        });
-        confirmationPrompt.run().then(async (answer: boolean) => {
-          if (answer) {
-            console.log('Deployer address:', owner.address);
-            console.time('Pairs added');
-            await keep3rV2OracleJob.addPairs(pairs);
-            console.timeEnd('Pairs added');
-            resolve();
-          } else {
-            console.error('Aborted!');
-            resolve();
-          }
-        });
+      const confirmationPrompt = new Confirm({
+        message: `Do you wish to activate the job?`,
+      });
+      confirmationPrompt.run().then(async (answer: boolean) => {
+        if (answer) {
+          console.log('Deployer address:', owner.address);
+          console.time(`Job activated`);
+          const tx = await keep3rV2OracleJob.keep3rActivate(
+            contracts.mainnet.keep3r
+          );
+          console.timeEnd(`Job activated`);
+          console.log('Tx hash', tx.hash);
+          resolve();
+        } else {
+          console.error('Aborted!');
+          resolve();
+        }
       });
     } catch (err) {
       reject(err);

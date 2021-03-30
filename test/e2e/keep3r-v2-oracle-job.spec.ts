@@ -60,7 +60,7 @@ describe('Keep3rV2OracleJob', function () {
     keep3r = await ethers.getContractAt('IKeep3rV1', contracts.mainnet.keep3r);
     keep3rOracleFactory = await ethers.getContractAt(
       'contracts/interfaces/keep3r/IKeep3rV2OracleFactory.sol:IKeep3rV2OracleFactory',
-      contracts.mainnet.yfi.keeperV2OracleFactory
+      contracts.mainnet.keeperV2OracleFactory
     );
     keep3rOracle = await ethers.getContractAt(
       'contracts/interfaces/keep3r/IKeep3rV2Oracle.sol:IKeep3rV2Oracle',
@@ -77,7 +77,7 @@ describe('Keep3rV2OracleJob', function () {
       0,
       0,
       false,
-      contracts.mainnet.yfi.keeperV2OracleFactory
+      contracts.mainnet.keeperV2OracleFactory
     );
     await evm.advanceTimeAndBlock(moment.duration(3, 'days').as('seconds'));
     await keep3rV2OracleJob.keep3rActivate(keep3r.address);
@@ -120,7 +120,7 @@ describe('Keep3rV2OracleJob', function () {
     });
   });
 
-  describe.only('work', () => {
+  describe('work', () => {
     when('doesnt have pairs to work on', () => {
       given(async function () {
         this.workTx = keep3rV2OracleJob.connect(keeper).work();

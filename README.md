@@ -25,7 +25,7 @@ For the job to be able to work Keep3rOracleV2, it should bond and be activated i
 1. Deploy Keep3rV2 Oracle Job
 
 ```bash
-npm run deploy:job
+npm run job:deploy
 ```
 
 2. Wait for 3 days so you can activate your job in the keep3r network

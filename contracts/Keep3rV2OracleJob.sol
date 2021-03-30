@@ -21,8 +21,6 @@ interface IKeep3rV2OracleJob is IKeep3rJob {
 
     function workable() external view returns (bool);
 
-    function workable(address _pair) external view returns (bool);
-
     function pairs() external view returns (address[] memory _pairs);
 
     // Setters
@@ -134,17 +132,12 @@ contract Keep3rV2OracleJob is UtilsReady, Keep3r, IKeep3rV2OracleJob {
         return false;
     }
 
-    function workable(address _pair) external view override notPaused returns (bool) {
-        return IKeep3rV2OracleFactory(keep3rV2OracleFactory).workable(_pair);
-    }
-
     // Worker actions
     function _work() internal returns (uint256 _credits) {
         uint256 _initialGas = gasleft();
         bool hasWorked = false;
         address[] memory _workedPairs = new address[](_availablePairs.length());
         uint256 _workedPairsAmount;
-
         for (uint256 i; i < _availablePairs.length(); i++) {
             address _pair = _availablePairs.at(i);
             if (IKeep3rV2OracleFactory(keep3rV2OracleFactory).workable(_pair)) {
