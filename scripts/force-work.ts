@@ -9,18 +9,18 @@ async function main() {
   const { address } = await prompt({
     type: 'input',
     name: 'address',
-    message: 'What is your keep3r v1 oracle job address?',
-    initial: `${contracts.mainnet.owned.keep3rV1OracleJob}`,
+    message: 'What is your keep3r v2 oracle job address?',
+    initial: contracts.mainnet.keep3rV2OracleJob,
   });
   if (!utils.isAddress(address)) throw new Error('Not a valid address');
-  const keep3rV1OracleJob = await ethers.getContractAt(
-    'contracts/PartialKeep3rV1OracleJob.sol:IPartialKeep3rV1OracleJob',
+  const keep3rV2OracleJob = await ethers.getContractAt(
+    'contracts/Keep3rV2OracleJob.sol:IKeep3rV2OracleJob',
     address
   );
-  await promptAndSubmit(keep3rV1OracleJob);
+  await promptAndSubmit(keep3rV2OracleJob);
 }
 
-function promptAndSubmit(fixedPartialKeep3rV1OracleJobContract: Contract) {
+function promptAndSubmit(keep3rV2OracleJob: Contract) {
   return new Promise<void>(async (resolve, reject) => {
     const [owner] = await ethers.getSigners();
     try {
@@ -38,9 +38,7 @@ function promptAndSubmit(fixedPartialKeep3rV1OracleJobContract: Contract) {
         if (answer) {
           console.log('Deployer address:', owner.address);
           console.time(`Force worked pair ${pair}`);
-          const tx = await fixedPartialKeep3rV1OracleJobContract.forceWork(
-            pair
-          );
+          const tx = await keep3rV2OracleJob.forceWork(pair);
           console.timeEnd(`Force worked pair ${pair}`);
           console.log('Tx hash', tx.hash);
           resolve();
