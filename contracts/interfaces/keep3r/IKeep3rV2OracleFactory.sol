@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.6.12;
+pragma solidity 0.8.4;
 
 import "@lbertenasco/contract-utils/interfaces/keep3r/IKeep3rV1.sol";
 import "./IKeep3rV2Oracle.sol";

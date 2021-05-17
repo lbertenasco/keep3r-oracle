@@ -5,5 +5,6 @@ import erc20 from './erc20';
 import eventUtils from './event-utils';
 import evm from './evm';
 import wallet from './wallet';
+import uniswap from './uniswap';
 
-export { bdd, behaviours, constants, erc20, eventUtils, evm, wallet };
+export { bdd, behaviours, constants, erc20, eventUtils, evm, wallet, uniswap };

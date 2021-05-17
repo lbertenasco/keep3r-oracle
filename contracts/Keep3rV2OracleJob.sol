@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.6.12;
+pragma solidity 0.8.4;
 
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@lbertenasco/contract-utils/contracts/abstract/UtilsReady.sol";
 import "@lbertenasco/contract-utils/contracts/keep3r/Keep3rAbstract.sol";
 import "./interfaces/keep3r/IKeep3rV2OracleFactory.sol";
@@ -51,6 +52,8 @@ interface IKeep3rV2OracleJob is IKeep3rJob {
 }
 
 contract Keep3rV2OracleJob is UtilsReady, Keep3r, IKeep3rV2OracleJob {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     uint256 public constant PRECISION = 1_000;
     uint256 public constant MAX_REWARD_MULTIPLIER = 1 * PRECISION; // 1x max reward multiplier
     uint256 public override rewardMultiplier = MAX_REWARD_MULTIPLIER;
@@ -162,12 +165,12 @@ contract Keep3rV2OracleJob is UtilsReady, Keep3r, IKeep3rV2OracleJob {
                 _workedPairsAmount += 1;
             }
         }
-        _credits = _getQuoteLimit(_initialGas).mul(rewardMultiplier).div(PRECISION);
+        _credits = (_getQuoteLimitFor(msg.sender, _initialGas) * rewardMultiplier) / PRECISION;
         require(hasWorked, "Keep3rV2OracleJob::should-have-worked");
         emit Worked(_workedPairs, msg.sender, _credits);
     }
 
-    function work() public override notPaused onlyKeeper returns (uint256 _credits) {
+    function work() public override notPaused onlyKeeper(msg.sender) returns (uint256 _credits) {
         _credits = _work();
         _paysKeeperInTokens(msg.sender, _credits);
     }

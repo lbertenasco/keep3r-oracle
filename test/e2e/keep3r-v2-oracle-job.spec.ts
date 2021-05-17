@@ -57,7 +57,10 @@ describe('Keep3rV2OracleJob', function () {
     keep3rWhale = await ethers.provider.getSigner(
       '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be'
     );
-    keep3r = await ethers.getContractAt('IKeep3rV1', contracts.mainnet.keep3r);
+    keep3r = await ethers.getContractAt(
+      '@lbertenasco/contract-utils/interfaces/keep3r/IKeep3rV1.sol:IKeep3rV1',
+      contracts.mainnet.keep3r
+    );
     keep3rOracleFactory = await ethers.getContractAt(
       'contracts/interfaces/keep3r/IKeep3rV2OracleFactory.sol:IKeep3rV2OracleFactory',
       contracts.mainnet.keeperV2OracleFactory
